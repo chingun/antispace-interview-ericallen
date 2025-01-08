@@ -1,7 +1,7 @@
 "use client";
 
-import { json } from "stream/consumers";
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 export type LocationStoreState = {
   latitude?: number;
@@ -31,97 +31,150 @@ const initialState: LocationStoreState = {
   locating: false,
 };
 
-export const useLocationStore = create<LocationStore>((set, get) => ({
-  ...initialState,
-  setLocation: (latitude, longitude) => set({ latitude, longitude }),
-  setLocationName: (locationName) => set({ locationName }),
-  getLocation: () => {
-    set({ locating: true });
+export const useLocationStore = create(
+  persist<LocationStore>(
+    (set, get) => ({
+      ...initialState,
+      setLocation: (latitude, longitude) => set({ latitude, longitude }),
+      setLocationName: (locationName) => set({ locationName }),
+      getLocation: () => {
+        set({ locating: true });
 
-    if (!navigator?.geolocation) {
-      set({ couldNotLocate: true, locationError: "Could not use browser location." });
+        if (!navigator?.geolocation) {
+          set({
+            couldNotLocate: true,
+            locationError: "Could not use browser location.",
+            latitude: undefined,
+            longitude: undefined,
+            locating: false,
+            locationName: "",
+          });
 
-      return;
-    }
+          return;
+        }
 
-    navigator?.geolocation?.getCurrentPosition(async (position) => {
-      const { latitude, longitude } = position.coords;
+        navigator?.geolocation?.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
 
-      const response = await fetch(`/api/geolocate?latitude=${latitude}&longitude=${longitude}`);
-      const data = await response.json();
+            fetch(`/api/geolocate?latitude=${latitude}&longitude=${longitude}`)
+              .then(async (response) => {
+                if (response.ok) {
+                  return await response.json();
+                }
+              })
+              .then((data) => {
+                if (data.error) {
+                  set({ locationError: data.error, couldNotLocate: true, locating: false });
 
-      if (data.error) {
-        set({ locationError: data.error, couldNotLocate: true, locating: false });
+                  return;
+                }
 
-        return;
-      }
+                set({
+                  latitude,
+                  longitude,
+                  locationName: data.features[0].properties.name,
+                  locationError: "",
+                  couldNotLocate: false,
+                  locating: false,
+                });
+              })
+              .catch((error) => {
+                console.error(error);
 
-      set({
-        latitude,
-        longitude,
-        locationName: data.features[0].properties.name,
-        locationError: "",
-        couldNotLocate: false,
-        locating: false,
-      });
-    });
+                set({
+                  couldNotLocate: true,
+                  latitude: undefined,
+                  longitude: undefined,
+                  locating: false,
+                  locationName: "",
+                });
+              })
+              .finally(() => {
+                set({ locating: false });
+              });
+          },
+          (error) => {
+            console.error(error);
 
-    set({ locating: false });
-  },
-  getLocationName: async () => {
-    set({ locating: true });
+            set({
+              couldNotLocate: true,
+              locationError: "Could not get geolocation from browser.",
+              latitude: undefined,
+              longitude: undefined,
+              locating: false,
+              locationName: "",
+            });
+          }
+        );
 
-    const { latitude, longitude } = get();
-
-    const response = await fetch(`/api/geolocate`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+        set({ locating: false });
       },
-      body: JSON.stringify({
-        latitude,
-        longitude,
-      }),
-    });
-    const data = await response.json();
+      getLocationName: async () => {
+        set({ locating: true });
 
-    if (data.error) {
-      set({ locationError: data.error, couldNotLocate: true, locating: false });
+        const { latitude, longitude } = get();
 
-      return;
-    }
+        const response = await fetch(`/api/geolocate`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            latitude,
+            longitude,
+          }),
+        });
+        const data = await response.json();
 
-    set({ locationName: data.features[0].properties.name, locationError: "", couldNotLocate: false, locating: false });
-  },
-  getLocationCoords: async () => {
-    set({ locating: true });
+        if (data.error) {
+          set({ locationError: data.error, couldNotLocate: true, locating: false });
 
-    const { locationName } = get();
+          return;
+        }
 
-    const response = await fetch(`/api/geolocate`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+        set({ locationName: data.features[0].properties.name, locationError: "", couldNotLocate: false, locating: false });
       },
-      body: JSON.stringify({
-        locationName,
-      }),
-    });
+      getLocationCoords: async () => {
+        set({ locating: true });
 
-    const data = await response.json();
+        const { locationName } = get();
 
-    console.log(data);
+        const response = await fetch(`/api/geolocate`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            locationName,
+          }),
+        });
 
-    if (data.error) {
-      set({ locationError: data.error, couldNotLocate: true, locating: false });
+        const data = await response.json();
 
-      return;
+        const { properties } = data.features[0];
+        const { coordinates } = data.features[0].properties;
+        const { name_preferred } = properties;
+        const { latitude, longitude } = coordinates;
+
+        if (data.error) {
+          set({ locationError: data.error, couldNotLocate: true, locating: false, latitude: undefined, longitude: undefined });
+
+          return;
+        }
+
+        set({
+          locationName: name_preferred,
+          latitude,
+          longitude,
+          locating: false,
+        });
+      },
+    }),
+    {
+      name: "antispace_weather-widget_location",
+      // @ts-expect-error partialize doesn't seem to like partial types; investigate
+      partialize: (state) => ({ latitude: state.latitude, longitude: state.longitude, locationName: state.locationName }),
     }
-
-    set({
-      latitude: data.features[0].geometry.coordinates[1],
-      longitude: data.features[0].geometry.coordinates[0],
-      locating: false,
-    });
-  },
-}));
+  )
+);

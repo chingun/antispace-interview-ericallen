@@ -1,80 +1,109 @@
-"use client";
+import {
+  WiDaySunny,
+  WiDaySunnyOvercast,
+  WiDayCloudy,
+  WiCloudy,
+  WiFog,
+  WiShowers,
+  WiRain,
+  WiSprinkle,
+  WiSnow,
+  WiThunderstorm,
+  WiRainMix,
+  WiHail,
+} from "react-icons/wi";
 
-import { useEffect, useState, useRef } from "react";
+import type { IconType } from "react-icons";
+export interface WeatherProps {
+  weatherCode?: number;
+  type?: "symbol" | "description";
+}
 
-import { RiSettings5Fill } from "react-icons/ri";
-import { WiThermometer } from "react-icons/wi";
+const weatherCodes: Record<number, string> = {
+  0: "Clear",
+  1: "Mostly Clear",
+  2: "Partly Cloudy",
+  3: "Overcast",
+  45: "Fog",
+  48: "Icy Fog",
+  51: "Light Drizzle",
+  53: "Drizzle",
+  55: "Heavy Drizzle",
+  80: "Light Showers",
+  81: "Showers",
+  82: "Heavy Showers",
+  61: "Light Rain",
+  63: "Rain",
+  65: "Heavy Rain",
+  56: "Light Freezing Drizzle",
+  57: "Freezing Drizzle",
+  66: "Light Freezing Rain",
+  67: "Freezing Rain",
+  71: "Light Snow",
+  73: "Snow",
+  75: "Heavy Snow",
+  77: "Snow Grains",
+  85: "Light Snow Showers",
+  86: "Snow Showers",
+  95: "Thunderstorm",
+  96: "Light T-storm w/ Hail",
+  99: "T-storm w/ Hail",
+};
 
-import WeatherSettings from "@/components/Weather/settings";
-import { useLocationStore } from "@/state/use-location-store";
+const WeatherIcon = (weatherCode: number): IconType => {
+  switch (weatherCode) {
+    case 0:
+    case 1:
+      return WiDaySunny;
+    case 2:
+      return WiDayCloudy;
+    case 3:
+      return WiCloudy;
+    case 45:
+      return WiFog;
+    case 51:
+    case 53:
+    case 55:
+      return WiSprinkle;
+    case 80:
+    case 81:
+    case 82:
+      return WiShowers;
+    case 61:
+    case 63:
+    case 65:
+      return WiRain;
+    case 56:
+    case 57:
+    case 66:
+    case 67:
+      return WiRainMix;
+    case 71:
+    case 73:
+    case 75:
+    case 77:
+      return WiSnow;
+    case 85:
+    case 86:
+      return WiSnow;
+    case 95:
+      return WiThunderstorm;
+    case 96:
+    case 99:
+      return WiHail;
+    default:
+      return WiDaySunnyOvercast;
+  }
+};
 
-export default function Weather(): React.ReactElement {
-  const { locationName, latitude, longitude } = useLocationStore();
+export default function Weather({ weatherCode = 0, type = "symbol" }: WeatherProps): React.ReactElement {
+  const description = weatherCodes[weatherCode];
 
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [showSettings, setShowSettings] = useState(!locationName);
+  if (type === "description") {
+    return <>{description}</>;
+  }
 
-  const onSettingsClick = (): void => {
-    setShowSettings((previousValue) => !previousValue);
-  };
+  const Component = WeatherIcon(weatherCode);
 
-  // set min-height for widget so switching to settings doesn't resize height
-  useEffect(() => {
-    if (containerRef.current) {
-      const container = containerRef.current;
-
-      container.style.height = `${container.scrollHeight}px`;
-    }
-  }, []);
-
-  return (
-    <section ref={containerRef} className="widget-container w-full">
-      <div className="widget flex flex-col items-start w-full h-full">
-        <header className="flex flex-row w-full mb-5">
-          <h4 className="uppercase font-[family-name:var(--font-exo-2)] font-semibold text-xl tracking-wider">
-            Weather{showSettings && " Settings"}
-          </h4>
-          <button className="ml-auto" onClick={onSettingsClick}>
-            {showSettings ? (
-              <WiThermometer className="hover:text-white text-slate-400 transition-all" size="25px" />
-            ) : (
-              <RiSettings5Fill className="hover:text-white text-slate-400 transition-all" size="25px" />
-            )}
-          </button>
-        </header>
-        {showSettings ? (
-          <WeatherSettings />
-        ) : (
-          <>
-            <main className="flex flex-row items-start w-full font-[family-name:var(--font-inter)]">
-              <div className="flex flex-row items-center">
-                <h5 className="sr-only">Current Weather</h5>
-                <div className="border-r-gray-600 border-r-solid border-r-[1px] pr-2 mr-2 text-5xl font-extralight">
-                  <span className="sr-only">Temperature: </span>13&deg;
-                </div>
-                <div className="flex flex-col align-middle justify-center">
-                  <div className="text-xl font-medium leading-none">Partly Cloudy</div>
-                  <ul className="flex flex-row text-neutral-500 text-xl font-medium">
-                    <li className="mr-2 leading-none">
-                      <span aria-hidden>H</span>
-                      <span className="sr-only">Today's High</span>: 16&deg;
-                    </li>
-                    <li className="leading-none">
-                      <span aria-hidden>L</span>
-                      <span className="sr-only">Today's Low</span>: 8&deg;
-                    </li>
-                  </ul>
-                </div>
-              </div>
-              <div className="ml-auto">
-                <h3 className="uppercase text-5xl font-extralight">{locationName}</h3>
-              </div>
-            </main>
-            <hr className="w-1/5 mx-auto mt-10 mb-10 border-neutral-500" />
-            <footer className="flex flex-row items-center w-full align-middle justify-center">Hourly Weather</footer>
-          </>
-        )}
-      </div>
-    </section>
-  );
+  return <Component title={description} size="64px" />;
 }

@@ -5,7 +5,8 @@ import { useLocationStore } from "@/state/use-location-store";
 import { useWeatherStore } from "@/state/use-weather-store";
 
 export default function WeatherSettings(): React.ReactElement {
-  const { temperatureUnits, showFeelsLike, setTemperatureUnits, setShowFeelsLike } = useWeatherStore();
+  const { temperatureUnits, showFeelsLike, setTemperatureUnits, setShowFeelsLike, twentyFourHourTime, setTwentyFourHourTime } =
+    useWeatherStore();
 
   const {
     locationName,
@@ -20,13 +21,15 @@ export default function WeatherSettings(): React.ReactElement {
     locationError,
   } = useLocationStore();
 
+  const onBlurLocationName = (): void => {
+    if (locationName) {
+      getLocationCoords();
+    }
+  };
+
   const onChangeLocationName = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setLocationName(e.target.value);
   };
-
-  useEffect(() => {
-    getLocation();
-  }, []);
 
   return (
     <main className="flex flex-col items-start w-full font-[family-name:var(--font-inter)]">
@@ -43,16 +46,17 @@ export default function WeatherSettings(): React.ReactElement {
             placeholder="Location"
             value={locationName}
             onChange={onChangeLocationName}
+            onBlur={onBlurLocationName}
           />
-          <button className="ml-auto" disabled={locating} onClick={locationName ? getLocationCoords : getLocationName}>
+          <button className="ml-auto" disabled={locating || couldNotLocate} onClick={getLocation}>
             <CiLocationArrow1 size="25px" />
             <span className="sr-only">Locate Me</span>
           </button>
         </div>
-        {locationError ? (
-          <p className="text-red-500">{locationError}</p>
-        ) : couldNotLocate ? (
-          <p className="text-red-500">Please enter the name of the city you'd like the weather for.</p>
+        {locationError || couldNotLocate ? (
+          <p className="text-neutral-500">
+            <span className="text-red-400">Error: </span>Please enter the name of the city you'd like the weather for.
+          </p>
         ) : latitude && longitude ? (
           <p className="text-neutral-500">
             {latitude}, {longitude}
@@ -83,6 +87,18 @@ export default function WeatherSettings(): React.ReactElement {
             onChange={(e) => setShowFeelsLike(e.target.checked)}
           />
           Feels Like
+        </label>
+      </div>
+      <div className="flex flex-row items-center mt-2">
+        <label htmlFor="twenty-four-hour-time" className="mr-2">
+          <input
+            type="checkbox"
+            id="twenty-four-hour-time"
+            className="mr-2 border-neutral-500 border-[1px] bg-black text-white"
+            checked={twentyFourHourTime}
+            onChange={(e) => setTwentyFourHourTime(e.target.checked)}
+          />
+          24hr Time
         </label>
       </div>
     </main>

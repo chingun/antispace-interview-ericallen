@@ -1,6 +1,6 @@
 import { Geist, Geist_Mono, Exo_2, Inter } from "next/font/google";
 
-import Weather from "@/components/Weather";
+import Weather from "@/components/WeatherWidget";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

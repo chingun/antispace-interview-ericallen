@@ -14,12 +14,10 @@ export type GeoLocationResponse = {
   attribution: string;
 };
 
-const geocoderUrl = new URL("https://api.mapbox.com");
-
 export default async function handler(req: NextApiRequest, res: NextApiResponse<GeoLocationResponse | { error: string }>) {
-  const { latitude, longitude, locationName }: GeoLocationRequest = req.body;
+  const geocoderUrl = new URL("https://api.mapbox.com");
 
-  console.log(req.body);
+  const { latitude, longitude, locationName }: GeoLocationRequest = req.body;
 
   if (!latitude && !longitude && locationName) {
     // get lat and long from locationName
@@ -34,8 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     geocoderUrl.searchParams.append("latitude", `${latitude}`);
   }
 
-  console.log(geocoderUrl.toString());
-
+  geocoderUrl.searchParams.append("types", "place");
   geocoderUrl.searchParams.append("access_token", process.env.MAPBOX_API_KEY ?? "");
 
   try {
@@ -53,8 +50,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       .catch((err) => {
         console.error(err);
       });
-
-    console.log(response);
 
     res.status(200).json(response);
   } catch (error) {
