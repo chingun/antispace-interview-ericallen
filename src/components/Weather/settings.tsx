@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { CiLocationArrow1 } from "react-icons/ci";
 
 import { useLocationStore } from "@/state/use-location-store";
-import type { GeoLocationResponse, GeoLocationRequest } from "@/pages/api/geolocate";
+import { useWeatherStore } from "@/state/use-weather-store";
 
 export default function WeatherSettings(): React.ReactElement {
+  const { temperatureUnits, showFeelsLike, setTemperatureUnits, setShowFeelsLike } = useWeatherStore();
+
   const {
     locationName,
     latitude,
@@ -58,6 +60,30 @@ export default function WeatherSettings(): React.ReactElement {
         ) : (
           <></>
         )}
+      </div>
+      <div className="flex flex-col items-center mt-2">
+        <select
+          name="temperature-units"
+          id="temperature-units"
+          className="border-neutral-500 border-[1px] bg-black text-white py-1 px-2"
+          value={temperatureUnits}
+          onChange={(e) => setTemperatureUnits(e.target.value as "imperial" | "metric")}
+        >
+          <option value="imperial">Imperial</option>
+          <option value="metric">Metric</option>
+        </select>
+      </div>
+      <div className="flex flex-row items-center mt-2">
+        <label htmlFor="show-feels-like" className="mr-2">
+          <input
+            type="checkbox"
+            id="show-feels-like"
+            className="mr-2 border-neutral-500 border-[1px] bg-black text-white"
+            checked={showFeelsLike}
+            onChange={(e) => setShowFeelsLike(e.target.checked)}
+          />
+          Feels Like
+        </label>
       </div>
     </main>
   );
