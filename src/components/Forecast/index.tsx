@@ -28,7 +28,7 @@ export default function Forecast({ forecast = [] }: ForecastProps): React.ReactE
       return (
         <li key={forecastItem?.timestamp.toString() ?? index} className="flex flex-col items-center w-[12.5%]">
           <Weather weatherCode={forecastItem.weatherCode} type="symbol" />
-          <span className="text-neutral-500 text-sm">{formatHour(forecastItem.timestamp)}</span>
+          <span className="text-white font-[family-name:var(--font-inter)]">{formatHour(forecastItem.timestamp)}</span>
         </li>
       );
     });

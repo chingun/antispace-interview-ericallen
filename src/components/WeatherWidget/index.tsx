@@ -30,6 +30,27 @@ export default function WeatherWidget(): React.ReactElement {
     setShowSettings((previousValue) => !previousValue);
   };
 
+  // borrowed from: https://bholmes.dev/blog/a-shiny-on-hover-effect-that-follows-your-mouse-css/
+  function mouseMoveEvent(e: MouseEvent): void {
+    if (containerRef.current) {
+      const { x, y } = containerRef.current.getBoundingClientRect();
+      containerRef.current.style.setProperty("--x", `${e.clientX - x}`);
+      containerRef.current.style.setProperty("--y", `${e.clientY - y}`);
+    }
+  }
+
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.addEventListener("mousemove", mouseMoveEvent);
+    }
+
+    return () => {
+      if (containerRef.current) {
+        containerRef.current.removeEventListener("mousemove", mouseMoveEvent);
+      }
+    };
+  }, [containerRef.current]);
+
   // set min-height for widget so switching to settings doesn't resize height
   useEffect(() => {
     if (containerRef.current) {
