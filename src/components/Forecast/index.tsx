@@ -24,6 +24,10 @@ export default function Forecast({ forecast = [] }: ForecastProps): React.ReactE
   };
 
   const renderForecastItems = () => {
+    // HACK: just cutting the forecast to 8 items to match the design for now
+    // TODO: add basic carousel for forecast items and implement virtualization
+    // via something like react-window, but that can come with its own set of
+    // challenges, especially around accessibility
     return forecast.slice(0, 9).map((forecastItem, index) => {
       return (
         <li key={forecastItem?.timestamp.toString() ?? index} className="flex flex-col items-center w-[12.5%]">
@@ -34,5 +38,10 @@ export default function Forecast({ forecast = [] }: ForecastProps): React.ReactE
     });
   };
 
-  return <ol className="flex flex-row w-full">{renderForecastItems()}</ol>;
+  return (
+    <ol className="flex flex-row w-full">
+      <h5 className="sr-only">Hourly Forecast</h5>
+      {renderForecastItems()}
+    </ol>
+  );
 }

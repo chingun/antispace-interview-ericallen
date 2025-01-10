@@ -32,6 +32,7 @@ export type WeatherResponse = {
 const range = (start: number, stop: number, step: number) =>
   Array.from({ length: (stop - start) / step }, (_, i) => start + i * step);
 
+// TODO: add some caching to reduce the number of requests to open-meteo
 export default async function handler(req: NextApiRequest, res: NextApiResponse<WeatherResponse | { error: string }>) {
   const weatherUrl = new URL("https://api.open-meteo.com/v1/forecast");
 
@@ -69,10 +70,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
       // Attributes for timezone and location
       const utcOffsetSeconds = response.utcOffsetSeconds();
-      const timezone = response.timezone();
-      const timezoneAbbreviation = response.timezoneAbbreviation();
-      const latitude = response.latitude();
-      const longitude = response.longitude();
 
       const current = response.current()!;
       const hourly = response.hourly()!;

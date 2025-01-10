@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { CiLocationArrow1 } from "react-icons/ci";
 
 import { useLocationStore } from "@/state/use-location-store";
@@ -14,7 +13,6 @@ export default function WeatherSettings(): React.ReactElement {
     longitude,
     setLocationName,
     getLocation,
-    getLocationName,
     getLocationCoords,
     locating,
     couldNotLocate,
@@ -75,7 +73,6 @@ export default function WeatherSettings(): React.ReactElement {
               id="temperature-units"
               className="appearance-none w-[15px] h-[15px] focus:border-white hover:border-white checked:bg-white border-neutral-500 border-[1px] mr-2 bg-black text-white"
               onChange={(e) => setTemperatureUnits(e.target.checked ? "imperial" : "metric")}
-              p
               checked={temperatureUnits === "imperial"}
             />
             Imperial Units
