@@ -16,7 +16,7 @@ The goal of this excercise is to evaluate your knowledge of React, Next.js and g
    ```sh
    npm install
    ```
-4. Copy `.env.example` to `.env.local` and fill in the `MAPBOX_API_KEY` with your [MapBox API key]()
+4. Copy `.env.example` to `.env.local` and fill in the `MAPBOX_API_KEY` with your [MapBox API key](https://console.mapbox.com/account/access-tokens/)
    ```sh
    cp .env.example .env.local
    ```
