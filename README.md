@@ -2,6 +2,29 @@
 
 The goal of this excercise is to evaluate your knowledge of React, Next.js and general frontend development.
 
+## Testing the Project
+
+1. Clone this repo
+   ```sh
+   git clone git@github.com:chingun/antispace-interview-ericallen.git
+   ```
+2. Change into the project directory
+   ```sh
+   cd antispace-interview-ericallen
+   ```
+3. Install dependencies
+   ```sh
+   npm install
+   ```
+4. Copy `.env.example` to `.env.local` and fill in the `MAPBOX_API_KEY` with your [MapBox API key]()
+   ```sh
+   cp .env.example .env.local
+   ```
+5. Run the project
+   ```sh
+   npm run dev
+   ```
+
 ## Goals
 
 The task is to create a widget that displays a weather forecast for a given location. The design of the widget is below:
